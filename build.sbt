@@ -33,7 +33,7 @@ libraryDependencies ++=
 
   )
 
-dependencyOverrides ++= Set(
+dependencyOverrides ++= Seq(
   "com.typesafe.akka" %% "akka-actor"  % akkaVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
