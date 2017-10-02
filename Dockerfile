@@ -10,6 +10,6 @@ COPY target/scala-2.11/*.jar /app/
 
 WORKDIR /app
 
-CMD java -jar ./akkaHttpAmqpConsumer.jar
+CMD java -jar ./AkkaEventHubsConsumer.jar
 # override CMD from your run command, or k8s yaml, or marathon json, etc...
 
