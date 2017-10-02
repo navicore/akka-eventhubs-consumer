@@ -1,4 +1,4 @@
-name := "AkkaHttpAmqpConsumer"
+name := "AkkaEventHubsConsumer"
 
 fork := true
 javaOptions in test ++= Seq(
@@ -29,8 +29,13 @@ libraryDependencies ++=
     "org.json4s" %% "json4s-native" % "3.5.3",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
 
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
 
+    // msft TMP deps until a jar is pulished to maven
+    "com.microsoft.azure" % "azure-eventhubs" % "0.13.0",
+    "com.microsoft.azure" % "azure-storage" % "5.0.0",
+    "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
+    "org.json4s" %% "json4s-jackson" % "3.5.3"
   )
 
 dependencyOverrides ++= Set(
@@ -38,6 +43,12 @@ dependencyOverrides ++= Set(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
 
-mainClass in assembly := Some("onextent.http.akka.consumer.Main")
-assemblyJarName in assembly := "AkkaHttpAmqpConsumer.jar"
+mainClass in assembly := Some("onextent.akka.eventhubs.consumer.Main")
+assemblyJarName in assembly := "AkkaEventHubsConsumer.jar"
+
+assemblyMergeStrategy in assembly := {
+  case x if x.endsWith("io.netty.versions.properties") => MergeStrategy.first
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
 

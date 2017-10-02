@@ -1,4 +1,4 @@
-package onextent.http.akka.consumer.models
+package onextent.akka.eventhubs.consumer.models
 
 import java.util.{Date, UUID}
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
