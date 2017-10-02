@@ -1,7 +1,7 @@
-package onextent.http.akka.consumer
+package onextent.akka.eventhubs.consumer
 
 import com.typesafe.scalalogging.LazyLogging
-import onextent.http.akka.consumer.models.JsonSupport
+import onextent.akka.eventhubs.consumer.models.JsonSupport
 
 object Main extends LazyLogging with JsonSupport {
 

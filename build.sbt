@@ -1,4 +1,4 @@
-name := "AkkaHttpAmqpConsumer"
+name := "AkkaEventHubsConsumer"
 
 fork := true
 javaOptions in test ++= Seq(
@@ -43,13 +43,12 @@ dependencyOverrides ++= Set(
   "com.typesafe.akka" %% "akka-stream" % akkaVersion
 )
 
-mainClass in assembly := Some("onextent.http.akka.consumer.Main")
-assemblyJarName in assembly := "AkkaHttpAmqpConsumer.jar"
+mainClass in assembly := Some("onextent.akka.eventhubs.consumer.Main")
+assemblyJarName in assembly := "AkkaEventHubsConsumer.jar"
 
 assemblyMergeStrategy in assembly := {
   case x if x.endsWith("io.netty.versions.properties") => MergeStrategy.first
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
-
 
