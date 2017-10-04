@@ -2,7 +2,7 @@ package onextent.akka.eventhubs.consumer
 
 import akka.Done
 import akka.stream.scaladsl.Sink
-import com.microsoft.azure.reactiveeventhubs.EventHubsMessage
+import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.typesafe.scalalogging.LazyLogging
@@ -16,7 +16,8 @@ object Main extends App with LazyLogging with JsonSupport {
     m ⇒ println(s"enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
   }
 
-  EventHub().source().to(console) .run()
+  EventHub().source(SourceOptions().fromSavedOffsets().saveOffsets()).to(console).run()
+  // EventHub().source().to(console) .run()
 
 }
 
