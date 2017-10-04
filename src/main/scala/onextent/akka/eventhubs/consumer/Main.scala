@@ -1,13 +1,22 @@
 package onextent.akka.eventhubs.consumer
 
+import akka.Done
+import akka.stream.scaladsl.Sink
+import com.microsoft.azure.reactiveeventhubs.EventHubsMessage
+import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
+import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.models.JsonSupport
 
-object Main extends LazyLogging with JsonSupport {
+import scala.concurrent.Future
 
-  def main(args: Array[String]) {
+object Main extends App with LazyLogging with JsonSupport {
 
-    logger.info("todo...")
+  val console: Sink[EventHubsMessage, Future[Done]] = Sink.foreach[EventHubsMessage] {
+    m ⇒ println(s"enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
   }
+
+  EventHub().source().to(console) .run()
+
 }
 
