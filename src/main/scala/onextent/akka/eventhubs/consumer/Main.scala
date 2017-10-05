@@ -27,11 +27,12 @@ object Main extends App with LazyLogging with JsonSupport with ErrorSupport {
     Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) ⇒
       implicit val formats: DefaultFormats.type = DefaultFormats
       val ehEnvelope = parse(m.contentAsString).extract[EhEnvelop]
-      ehEnvelope.contents.body match {
+      //todo: match after the parse but before the extract
+      ehEnvelope.contents.body match { //todo: sane matching
         case s if s contains "assessment"  =>
           val assessment = parse(ehEnvelope.contents.body).extract[Message[Assessment]]
           println(s"ejs got assessment: $assessment")
-        case s if s contains "log"  => //todo: sane matching
+        case s if s contains "log"  =>
           val log = parse(ehEnvelope.contents.body).extract[Message[Log]]
           println(s"ejs got log: $log")
         case other =>
