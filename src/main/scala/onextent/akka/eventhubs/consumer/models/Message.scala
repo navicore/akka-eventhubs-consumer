@@ -2,9 +2,18 @@ package onextent.akka.eventhubs.consumer.models
 
 import java.util.{Date, UUID}
 
-final case class Message(
-    id: UUID,
-    datetime: Date,
-    body: String
+final case class Body(body: String)
+
+final case class EhEnvelop(contents: Body)
+
+final case class Message[T](
+    id: UUID = java.util.UUID.randomUUID(),
+    `type`: String = "unknown",
+    datetime: Date = new Date(),
+    body: T
 )
 
+final case class Assessment(name: String, value: Double)
+
+// 'from' will tend to associate Log messages with the 'name' used in assessments
+final case class Log(level: Int, from: String, text: String)

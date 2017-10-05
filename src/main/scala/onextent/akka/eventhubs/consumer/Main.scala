@@ -8,8 +8,10 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl._
 import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.models.JsonSupport
+import onextent.akka.eventhubs.consumer.models._
 import onextent.akka.eventhubs.consumer.routes.CacherRoute
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 import scala.concurrent.Future
 
@@ -21,15 +23,25 @@ object Main extends App with LazyLogging with JsonSupport with ErrorSupport {
         s"enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
     }
 
-  val console2: Sink[EventHubsMessage, Future[Done]] =
-    Sink.foreach[EventHubsMessage] { m ⇒
-      println(
-        s"ejs console 2 enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
+  val updateDbActors: Sink[EventHubsMessage, Future[Done]] =
+    Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) ⇒
+      implicit val formats: DefaultFormats.type = DefaultFormats
+      val ehEnvelope = parse(m.contentAsString).extract[EhEnvelop]
+      ehEnvelope.contents.body match {
+        case s if s contains "assessment"  =>
+          val assessment = parse(ehEnvelope.contents.body).extract[Message[Assessment]]
+          println(s"ejs got assessment: $assessment")
+        case s if s contains "log"  => //todo: sane matching
+          val log = parse(ehEnvelope.contents.body).extract[Message[Log]]
+          println(s"ejs got log: $log")
+        case other =>
+          println(s"ejs got other: $other")
+      }
     }
 
   EventHub()
     .source(SourceOptions().fromSavedOffsets().saveOffsets())
-    .alsoTo(console2)
+    .alsoTo(updateDbActors)
     .to(console)
     .run()
 
