@@ -31,13 +31,9 @@ libraryDependencies ++=
     "org.json4s" %% "json4s-native" % "3.5.3",
     "com.github.nscala-time" %% "nscala-time" % "2.16.0",
 
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+    "com.microsoft.azure" %% "azure-eventhubs-reactive" % "0.5.0",
 
-    // msft TMP deps until a jar is pulished to maven
-    "com.microsoft.azure" % "azure-eventhubs" % "0.13.0",
-    "com.microsoft.azure" % "azure-storage" % "5.0.0",
-    "com.datastax.cassandra" % "cassandra-driver-core" % "3.1.4",
-    "org.json4s" %% "json4s-jackson" % "3.5.3"
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test"
   )
 
 dependencyOverrides ++= Set(
