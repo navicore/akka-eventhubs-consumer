@@ -18,17 +18,8 @@ object AssessmentCacher {
   def props(implicit timeout: Timeout) = Props(new AssessmentCacher)
   def name = "assessmentCacher"
 
-  case class SetAssessment(name: String, value: Double)
-  case class GetAssessment(name: String)
-  case object GetAssessments
-  case class CancelAssessment(name: String)
-
   case class Assessment(name: String, value: Double)
-  case class Assessments(events: Vector[Assessment])
-
-  sealed trait AssessmentResponse
-  case class AssessmentCreated(event: Assessment) extends AssessmentResponse
-  case object AssessmentExists extends AssessmentResponse
+  case class GetAssessment(name: String)
 }
 
 class AssessmentCacher(implicit timeout: Timeout)
