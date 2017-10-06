@@ -1,6 +1,7 @@
 package onextent.akka.eventhubs.consumer
 
 import akka.actor._
+import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.AssessmentCacher.Assessment
 
 object AssessmentHolder {
@@ -11,17 +12,19 @@ object AssessmentHolder {
   case class GetAssessment()
 }
 
-class AssessmentHolder (name: String) extends Actor {
+class AssessmentHolder (name: String) extends Actor with LazyLogging {
   import AssessmentHolder._
 
-  var assessment: Option[Assessment] = None
+  var state: Option[Assessment] = None
 
   override def receive: PartialFunction[Any, Unit] = {
     case SetAssessment(newAssessment) =>
-      assessment = Some(newAssessment)
+      logger.debug(s"SetAssessment $name")
+      state = Some(newAssessment)
     case GetAssessment() =>
-      assessment match {
-        case Some(_) => sender() ! assessment
+      logger.debug(s"GetAssessment $name")
+      state match {
+        case Some(a) => sender() ! a
         case _ => sender() ! None
       }
   }

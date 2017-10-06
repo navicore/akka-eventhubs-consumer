@@ -55,11 +55,11 @@ class AssessmentCacher(implicit timeout: Timeout)
           val assessment =
             parse(ehEnvelope.contents.body).extract[Message[Assessment]].body
           def create(): Unit = {
-            val holder = createAssessmentHolder(name)
+            val holder = createAssessmentHolder(assessment.name)
             holder ! AssessmentHolder.SetAssessment(assessment)
           }
           context
-            .child(name)
+            .child(assessment.name)
             .fold(create())(holder =>
               holder ! AssessmentHolder.SetAssessment(assessment))
         case s if s contains "log" =>
@@ -76,12 +76,12 @@ class AssessmentCacher(implicit timeout: Timeout)
     .to(console)
     .run()
 
-  override def receive = {
-    case GetAssessment(name) =>
-      logger.error("ejs !!!!!!!!!!!!!! " + name)
-      def notFound() = sender() ! None
-      def getAssessment(child: ActorRef) = child forward AssessmentHolder.GetAssessment
-      context.child(name).fold(notFound())(getAssessment)
+  override def receive: PartialFunction[Any, Unit] = {
+    case GetAssessment(aname) =>
+      logger.debug(s"GetAssessment $aname")
+      def notFound(): Unit = sender() ! None
+      def askForAssessment(child: ActorRef): Unit = child forward AssessmentHolder.GetAssessment()
+      context.child(aname).fold(notFound())(askForAssessment)
   }
 
 }
