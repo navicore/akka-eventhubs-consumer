@@ -8,7 +8,7 @@ final case class EhEnvelop(contents: Body)
 
 final case class Message[T](
     id: UUID = java.util.UUID.randomUUID(),
-    `type`: String = "unknown",
+    kind: String = "unknown",
     datetime: Date = new Date(),
     body: T
 )

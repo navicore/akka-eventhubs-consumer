@@ -1,5 +1,6 @@
 package onextent.akka.eventhubs.consumer.routes
 
+import scala.concurrent.duration._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.{Directives, Route}
@@ -56,7 +57,6 @@ object CacherRoute
 }
 
 trait RequestTimeout {
-  import scala.concurrent.duration._
   def requestTimeout(config: Config): Timeout = {
     val t = config.getString("akka.http.server.request-timeout")
     val d = Duration(t)

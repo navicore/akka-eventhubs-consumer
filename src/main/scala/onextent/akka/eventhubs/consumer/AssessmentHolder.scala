@@ -1,5 +1,6 @@
 package onextent.akka.eventhubs.consumer
 
+import AssessmentHolder._
 import akka.actor._
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.models.Assessment
@@ -12,7 +13,6 @@ object AssessmentHolder {
 }
 
 class AssessmentHolder(name: String) extends Actor with LazyLogging {
-  import AssessmentHolder._
   def receive: Receive = hasState(None)
 
   def hasState(state: Option[Assessment]): Receive = {

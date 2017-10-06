@@ -1,5 +1,6 @@
 package onextent.akka.eventhubs.consumer
 
+import AssessmentCacher._
 import akka.Done
 import akka.actor._
 import akka.stream.scaladsl.Sink
@@ -24,10 +25,9 @@ object AssessmentCacher {
 class AssessmentCacher(implicit timeout: Timeout)
     extends Actor
     with LazyLogging {
-  import AssessmentCacher._
 
   val console: Sink[EventHubsMessage, Future[Done]] =
-    Sink.foreach[EventHubsMessage] { m ⇒
+    Sink.foreach[EventHubsMessage] { m =>
       logger.debug(
         s"enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
     }
@@ -38,7 +38,7 @@ class AssessmentCacher(implicit timeout: Timeout)
   implicit val formats: DefaultFormats.type = DefaultFormats
 
   val updateDbActors: Sink[EventHubsMessage, Future[Done]] =
-    Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) ⇒
+    Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) =>
       val body = parse(m.contentAsString).extract[EhEnvelop].contents.body
       //todo: match after the parse but before the extract
       body match { //todo: sane matching
