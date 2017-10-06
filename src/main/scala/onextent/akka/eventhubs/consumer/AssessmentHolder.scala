@@ -2,30 +2,23 @@ package onextent.akka.eventhubs.consumer
 
 import akka.actor._
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.AssessmentCacher.Assessment
+import onextent.akka.eventhubs.consumer.models.Assessment
 
 object AssessmentHolder {
   def props(name: String) = Props(new AssessmentHolder(name))
   def name = "assessmentHolder"
-
   case class SetAssessment(assessment: Assessment)
   case class GetAssessment()
 }
 
 class AssessmentHolder(name: String) extends Actor with LazyLogging {
   import AssessmentHolder._
+  def receive: Receive = hasState(None)
 
-  var state: Option[Assessment] = None
-
-  override def receive: PartialFunction[Any, Unit] = {
+  def hasState(state: Option[Assessment]): Receive = {
     case SetAssessment(newAssessment) =>
-      logger.debug(s"SetAssessment $name")
-      state = Some(newAssessment)
+      context become hasState(Some(newAssessment))
     case GetAssessment() =>
-      logger.debug(s"GetAssessment $name")
-      state match {
-        case Some(a) => sender() ! a
-        case _       => sender() ! None
-      }
+      sender() ! state
   }
 }

@@ -8,8 +8,7 @@ import akka.util.Timeout
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.AssessmentCacher.Assessment
-import onextent.akka.eventhubs.consumer.models.JsonSupport
+import onextent.akka.eventhubs.consumer.models.{Assessment, JsonSupport}
 import onextent.akka.eventhubs.consumer.{AssessmentCacher, ErrorSupport}
 import spray.json._
 
@@ -24,9 +23,11 @@ object CacherRoute
 
   implicit val system: ActorSystem = ActorSystem()
   val config: Config = ConfigFactory.load()
+
+  implicit val timeout: Timeout = requestTimeout(config)
+
   val assessmentCacher: ActorRef =
-    system.actorOf(AssessmentCacher.props(requestTimeout(config)),
-                   AssessmentCacher.name)
+    system.actorOf(AssessmentCacher.props(timeout), AssessmentCacher.name)
 
   def apply: Route =
     path(urlpath / Segment) { name =>
@@ -34,17 +35,15 @@ object CacherRoute
         handleErrors {
           cors(corsSettings) {
             get {
-              logger.debug(s"get $urlpath $name")
               val queryMessage = AssessmentCacher.GetAssessment(name)
-              implicit val timeout: Timeout = requestTimeout(config)
               val f: Future[Any] = assessmentCacher ask queryMessage
               onSuccess(f) { (r: Any) =>
                 {
                   r match {
-                    case a: Assessment =>
+                    case Some(assessment: Assessment) =>
                       complete(HttpEntity(ContentTypes.`application/json`,
-                                          a.toJson.prettyPrint))
-                    case None =>
+                                          assessment.toJson.prettyPrint))
+                    case _ =>
                       complete(StatusCodes.NotFound)
                   }
                 }

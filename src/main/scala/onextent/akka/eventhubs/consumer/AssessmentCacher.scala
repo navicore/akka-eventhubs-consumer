@@ -8,7 +8,7 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.models.{EhEnvelop, Log, Message}
+import onextent.akka.eventhubs.consumer.models.{Assessment, EhEnvelop, Log, Message}
 import org.json4s.jackson.JsonMethods._
 import org.json4s.{DefaultFormats, _}
 
@@ -18,7 +18,6 @@ object AssessmentCacher {
   def props(implicit timeout: Timeout) = Props(new AssessmentCacher)
   def name = "assessmentCacher"
 
-  case class Assessment(name: String, value: Double)
   case class GetAssessment(name: String)
 }
 
@@ -36,26 +35,26 @@ class AssessmentCacher(implicit timeout: Timeout)
   def createAssessmentHolder(name: String): ActorRef =
     context.actorOf(AssessmentHolder.props(name), name)
 
+  implicit val formats: DefaultFormats.type = DefaultFormats
+
   val updateDbActors: Sink[EventHubsMessage, Future[Done]] =
     Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) ⇒
-      implicit val formats: DefaultFormats.type = DefaultFormats
-      val ehEnvelope = parse(m.contentAsString).extract[EhEnvelop]
+      val body = parse(m.contentAsString).extract[EhEnvelop].contents.body
       //todo: match after the parse but before the extract
-      ehEnvelope.contents.body match { //todo: sane matching
+      body match { //todo: sane matching
         case s if s contains "assessment" =>
           val assessment =
-            parse(ehEnvelope.contents.body).extract[Message[Assessment]].body
+            parse(body).extract[Message[Assessment]].body
           def create(): Unit = {
             val holder = createAssessmentHolder(assessment.name)
             holder ! AssessmentHolder.SetAssessment(assessment)
           }
           context
             .child(assessment.name)
-            .fold(create())(holder =>
-              holder ! AssessmentHolder.SetAssessment(assessment))
+            .fold(create())(_ ! AssessmentHolder.SetAssessment(assessment))
         case s if s contains "log" =>
-          val log = parse(ehEnvelope.contents.body).extract[Message[Log]]
-          logger.info(s"got log msg: $log")
+          val logmsg = parse(body).extract[Message[Log]]
+          logger.info(s"log msg: $logmsg")
         case other =>
           logger.warn(s"got unknown msg type: $other")
       }
@@ -69,7 +68,6 @@ class AssessmentCacher(implicit timeout: Timeout)
 
   override def receive: PartialFunction[Any, Unit] = {
     case GetAssessment(aname) =>
-      logger.debug(s"GetAssessment $aname")
       def notFound(): Unit = sender() ! None
       def askForAssessment(child: ActorRef): Unit = child forward AssessmentHolder.GetAssessment()
       context.child(aname).fold(notFound())(askForAssessment)
