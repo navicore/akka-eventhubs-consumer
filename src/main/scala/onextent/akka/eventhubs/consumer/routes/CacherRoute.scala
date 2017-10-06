@@ -1,9 +1,9 @@
 package onextent.akka.eventhubs.consumer.routes
 
-import spray.json._
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.{Directives, Route}
+import akka.pattern.ask
 import akka.util.Timeout
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import com.typesafe.config.{Config, ConfigFactory}
@@ -11,6 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.AssessmentCacher.Assessment
 import onextent.akka.eventhubs.consumer.models.JsonSupport
 import onextent.akka.eventhubs.consumer.{AssessmentCacher, ErrorSupport}
+import spray.json._
 
 import scala.concurrent.Future
 
@@ -35,7 +36,6 @@ object CacherRoute
             get {
               logger.debug(s"get $urlpath $name")
               val queryMessage = AssessmentCacher.GetAssessment(name)
-              import akka.pattern.ask
               implicit val timeout: Timeout = requestTimeout(config)
               val f: Future[Any] = assessmentCacher ask queryMessage
               onSuccess(f) { (r: Any) =>
