@@ -12,7 +12,7 @@ object AssessmentHolder {
   case class GetAssessment()
 }
 
-class AssessmentHolder (name: String) extends Actor with LazyLogging {
+class AssessmentHolder(name: String) extends Actor with LazyLogging {
   import AssessmentHolder._
 
   var state: Option[Assessment] = None
@@ -25,8 +25,7 @@ class AssessmentHolder (name: String) extends Actor with LazyLogging {
       logger.debug(s"GetAssessment $name")
       state match {
         case Some(a) => sender() ! a
-        case _ => sender() ! None
+        case _       => sender() ! None
       }
   }
 }
-

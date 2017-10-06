@@ -18,12 +18,14 @@ object CacherRoute
     extends JsonSupport
     with LazyLogging
     with Directives
-    with ErrorSupport with RequestTimeout {
+    with ErrorSupport
+    with RequestTimeout {
 
   implicit val system: ActorSystem = ActorSystem()
   val config: Config = ConfigFactory.load()
-  lazy val assessmentCacher: ActorRef =
-    system.actorOf(AssessmentCacher.props(requestTimeout(config)), AssessmentCacher.name)
+  val assessmentCacher: ActorRef =
+    system.actorOf(AssessmentCacher.props(requestTimeout(config)),
+                   AssessmentCacher.name)
 
   def apply: Route =
     path(urlpath / Segment) { name =>
@@ -32,19 +34,21 @@ object CacherRoute
           cors(corsSettings) {
             get {
               logger.debug(s"get $urlpath $name")
-              val q = AssessmentCacher.GetAssessment(name)
+              val queryMessage = AssessmentCacher.GetAssessment(name)
               import akka.pattern.ask
               implicit val timeout: Timeout = requestTimeout(config)
-              val f: Future[Any] = assessmentCacher ask q
-              // assessmentCacher ! q
-              onSuccess(f) { (r: Any) => {
-                r match {
-                  case a: Assessment =>
-                    complete(HttpEntity(ContentTypes.`application/json`, a.toJson.prettyPrint))
-                  case None =>
-                    complete(StatusCodes.NotFound)
+              val f: Future[Any] = assessmentCacher ask queryMessage
+              onSuccess(f) { (r: Any) =>
+                {
+                  r match {
+                    case a: Assessment =>
+                      complete(HttpEntity(ContentTypes.`application/json`,
+                                          a.toJson.prettyPrint))
+                    case None =>
+                      complete(StatusCodes.NotFound)
+                  }
                 }
-              } }
+              }
             }
           }
         }

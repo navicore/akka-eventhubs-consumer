@@ -3,7 +3,12 @@ package onextent.akka.eventhubs.consumer
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{HttpOrigin, HttpOriginRange}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Directive, ExceptionHandler, RejectionHandler, Route}
+import akka.http.scaladsl.server.{
+  Directive,
+  ExceptionHandler,
+  RejectionHandler,
+  Route
+}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 import com.typesafe.config.{Config, ConfigFactory}
@@ -46,4 +51,3 @@ trait ErrorSupport extends LazyLogging {
       }
     }
 }
-
