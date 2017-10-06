@@ -1,7 +1,9 @@
 package onextent.akka.eventhubs.consumer.models
 
 import java.util.{Date, UUID}
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import onextent.akka.eventhubs.consumer.AssessmentCacher.Assessment
 import spray.json._
 
 trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {

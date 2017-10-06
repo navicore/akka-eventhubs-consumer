@@ -13,7 +13,5 @@ final case class Message[T](
     body: T
 )
 
-final case class Assessment(name: String, value: Double)
-
 // 'from' will tend to associate Log messages with the 'name' used in assessments
 final case class Log(level: Int, from: String, text: String)
