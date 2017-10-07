@@ -11,6 +11,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.models.{Assessment, JsonSupport}
 import onextent.akka.eventhubs.consumer.{AssessmentCacher, ErrorSupport}
+import AssessmentCacher._
 import spray.json._
 
 import scala.concurrent.Future
@@ -36,8 +37,7 @@ object CacherRoute
         handleErrors {
           cors(corsSettings) {
             get {
-              val queryMessage = AssessmentCacher.GetAssessment(name)
-              val f: Future[Any] = assessmentCacher ask queryMessage
+              val f: Future[Any] = assessmentCacher ask GetAssessment(name)
               onSuccess(f) { (r: Any) =>
                 {
                   r match {
