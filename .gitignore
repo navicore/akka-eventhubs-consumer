@@ -1,4 +1,5 @@
 ENV.sh
+devops/
 .ensime
 .ensime_cache/
 *.class
