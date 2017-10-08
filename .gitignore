@@ -1,5 +1,5 @@
 ENV.sh
-devops/
+devops/k8s
 .ensime
 .ensime_cache/
 *.class
