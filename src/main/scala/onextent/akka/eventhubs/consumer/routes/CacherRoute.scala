@@ -10,8 +10,8 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.models.{Assessment, JsonSupport}
-import onextent.akka.eventhubs.consumer.{AssessmentCacher, ErrorSupport}
-import AssessmentCacher._
+import onextent.akka.eventhubs.consumer.{AssessmentService, ErrorSupport}
+import AssessmentService._
 import spray.json._
 
 import scala.concurrent.Future
@@ -29,7 +29,7 @@ object CacherRoute
   implicit val timeout: Timeout = requestTimeout(config)
 
   val assessmentCacher: ActorRef =
-    system.actorOf(AssessmentCacher.props(timeout), AssessmentCacher.name)
+    system.actorOf(AssessmentService.props(timeout), AssessmentService.name)
 
   def apply: Route =
     path(urlpath / Segment) { name =>

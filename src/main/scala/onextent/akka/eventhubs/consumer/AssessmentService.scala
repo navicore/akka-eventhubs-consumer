@@ -8,18 +8,18 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.AssessmentCacher._
+import onextent.akka.eventhubs.consumer.AssessmentService._
 
 import scala.concurrent.Future
 
-object AssessmentCacher {
-  def props(implicit timeout: Timeout) = Props(new AssessmentCacher)
+object AssessmentService {
+  def props(implicit timeout: Timeout) = Props(new AssessmentService)
   def name = "assessmentCacher"
 
   case class GetAssessment(name: String)
 }
 
-class AssessmentCacher(implicit timeout: Timeout)
+class AssessmentService(implicit timeout: Timeout)
     extends Actor
     with LazyLogging {
 
@@ -37,11 +37,9 @@ class AssessmentCacher(implicit timeout: Timeout)
     .run()
 
   override def receive: PartialFunction[Any, Unit] = {
-    case GetAssessment(aname) =>
+    case GetAssessment(name) =>
       def notFound(): Unit = sender() ! None
-      def askForAssessment(child: ActorRef): Unit =
-        child forward AssessmentHolder.GetAssessment()
-      context.child(aname).fold(notFound())(askForAssessment)
+      context.child(name).fold(notFound())(_ forward AssessmentHolder.GetAssessment())
   }
 
 }
