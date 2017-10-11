@@ -15,20 +15,9 @@ object AssessmentHolder {
 class AssessmentHolder(name: String) extends Actor with LazyLogging {
   def receive: Receive = hasState(None)
 
-  def createHttpUpdater(name: String): ActorRef =
-    context.actorOf(Props[HttpUpdater], s"${name}HttpUpdater")
-
   def hasState(state: Option[Assessment]): Receive = {
     case SetAssessment(newAssessment) =>
       context become hasState(Some(newAssessment))
-      def create(): Unit = {
-        val updater = createHttpUpdater(newAssessment.name)
-        updater ! newAssessment
-      }
-      context
-        .child(s"${newAssessment.name}HttpUpdater")
-        .fold(create())(_ ! newAssessment)
-
     case GetAssessment() =>
       sender() ! state
   }
