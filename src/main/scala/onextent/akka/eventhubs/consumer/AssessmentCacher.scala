@@ -9,7 +9,12 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.models.{Assessment, EhEnvelop, Log, Message}
+import onextent.akka.eventhubs.consumer.models.{
+  Assessment,
+  EhEnvelop,
+  Log,
+  Message
+}
 import org.json4s.jackson.JsonMethods._
 import org.json4s.{DefaultFormats, _}
 
@@ -33,7 +38,7 @@ class AssessmentCacher(implicit timeout: Timeout)
     }
 
   def createAssessmentHolder(name: String): ActorRef =
-    context.actorOf(AssessmentHolder.props(name), name)
+     context.actorOf(AssessmentHolder.props(name), name)
 
   implicit val formats: DefaultFormats.type = DefaultFormats
 
@@ -69,7 +74,8 @@ class AssessmentCacher(implicit timeout: Timeout)
   override def receive: PartialFunction[Any, Unit] = {
     case GetAssessment(aname) =>
       def notFound(): Unit = sender() ! None
-      def askForAssessment(child: ActorRef): Unit = child forward AssessmentHolder.GetAssessment()
+      def askForAssessment(child: ActorRef): Unit =
+        child forward AssessmentHolder.GetAssessment()
       context.child(aname).fold(notFound())(askForAssessment)
   }
 
