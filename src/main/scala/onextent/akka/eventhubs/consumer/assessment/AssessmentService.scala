@@ -1,4 +1,4 @@
-package onextent.akka.eventhubs.consumer
+package onextent.akka.eventhubs.consumer.assessment
 
 import akka.Done
 import akka.actor._
@@ -8,15 +8,17 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.AssessmentService._
+import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
+import onextent.akka.eventhubs.consumer.models.Assessment
+import onextent.akka.eventhubs.consumer.{Holder, HttpUpdateSink}
 
 import scala.concurrent.Future
 
 object AssessmentService {
   def props(implicit timeout: Timeout) = Props(new AssessmentService)
-  def name = "assessmentCacher"
+  def name = "assessmentService"
 
-  case class GetAssessment(name: String)
+  final case class Get(name: String)
 }
 
 class AssessmentService(implicit timeout: Timeout)
@@ -32,14 +34,14 @@ class AssessmentService(implicit timeout: Timeout)
   EventHub()
     .source(SourceOptions().fromSavedOffsets().saveOffsets())
     .alsoTo(AssessmentDbSink(context))
-    .alsoTo(HttpUpdateSink(context))
+    .alsoTo(HttpUpdateSink[Assessment](context, "assessment")) //todo filter w/ op
     .to(console)
     .run()
 
   override def receive: PartialFunction[Any, Unit] = {
-    case GetAssessment(name) =>
+    case Get(name) =>
       def notFound(): Unit = sender() ! None
-      context.child(name).fold(notFound())(_ forward AssessmentHolder.GetAssessment())
+      context.child(name).fold(notFound())(_ forward Holder.Get())
   }
 
 }

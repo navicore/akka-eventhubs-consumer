@@ -5,7 +5,7 @@ import akka.actor._
 import akka.stream.scaladsl.Sink
 import com.microsoft.azure.reactiveeventhubs.EventHubsMessage
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.models.{Assessment, EhEnvelop, Message}
+import onextent.akka.eventhubs.consumer.models.EhEnvelop
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -13,10 +13,10 @@ import scala.concurrent.Future
 
 object HttpUpdateSink extends LazyLogging {
 
-  def apply(context: ActorContext): Sink[EventHubsMessage, Future[Done]] = {
+  def apply[T: Manifest](context: ActorContext, containsPattern: String) : Sink[EventHubsMessage, Future[Done]] = {
 
-    def createUpdater(name: String): ActorRef =
-      context.actorOf(Props[HttpUpdater], s"${name}HttpUpdater")
+    def createUpdater(): ActorRef =
+      context.actorOf(Props[HttpUpdater], "HttpUpdater")
 
     implicit val formats: DefaultFormats.type = DefaultFormats
 
@@ -24,14 +24,13 @@ object HttpUpdateSink extends LazyLogging {
       val body = parse(m.contentAsString).extract[EhEnvelop].contents.body
       //todo: match after the parse but before the extract
       body match { //todo: sane matching
-        case s if s contains "assessment" =>
-          val newAssessment = parse(body).extract[Message[Assessment]].body
+        case json if json contains containsPattern =>
           def create(): Unit = {
-            createUpdater(newAssessment.name) ! newAssessment
+            createUpdater() ! json
           }
           context
-            .child(s"${newAssessment.name}HttpUpdater")
-            .fold(create())(_ ! newAssessment)
+            .child("HttpUpdater")
+            .fold(create())(_ ! json)
         case other =>
           logger.warn(s"got unknown msg type: $other")
       }

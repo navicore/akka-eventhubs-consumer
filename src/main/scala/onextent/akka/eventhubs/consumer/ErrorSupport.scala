@@ -3,18 +3,15 @@ package onextent.akka.eventhubs.consumer
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{HttpOrigin, HttpOriginRange}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{
-  Directive,
-  ExceptionHandler,
-  RejectionHandler,
-  Route
-}
+import akka.http.scaladsl.server.{Directive, ExceptionHandler, RejectionHandler, Route}
+import akka.util.Timeout
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.collection.JavaConverters._
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 trait ErrorSupport extends LazyLogging {
 
@@ -50,4 +47,12 @@ trait ErrorSupport extends LazyLogging {
         complete("ok")
       }
     }
+
+  def requestTimeout: Timeout = {
+    val t = conf.getString("akka.http.server.request-timeout")
+    val d = Duration(t)
+    FiniteDuration(d.length, d.unit)
+  }
+
+  implicit val timeout: Timeout = requestTimeout
 }

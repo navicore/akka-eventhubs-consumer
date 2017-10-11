@@ -1,11 +1,12 @@
-package onextent.akka.eventhubs.consumer
+package onextent.akka.eventhubs.consumer.assessment
 
 import akka.Done
 import akka.actor._
 import akka.stream.scaladsl.Sink
 import com.microsoft.azure.reactiveeventhubs.EventHubsMessage
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.models.{Assessment, EhEnvelop, Log, Message}
+import onextent.akka.eventhubs.consumer.Holder
+import onextent.akka.eventhubs.consumer.models.{Assessment, EhEnvelop, Message}
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 
@@ -17,9 +18,6 @@ object AssessmentDbSink extends LazyLogging {
 
     implicit val formats: DefaultFormats.type = DefaultFormats
 
-    def createHolder(name: String): ActorRef =
-      context.actorOf(AssessmentHolder.props(name), name)
-
     Sink.foreach[EventHubsMessage] { (m: EventHubsMessage) =>
       val body = parse(m.contentAsString).extract[EhEnvelop].contents.body
       //todo: match after the parse but before the extract
@@ -27,16 +25,11 @@ object AssessmentDbSink extends LazyLogging {
         case s if s contains "assessment" =>
           val assessment =
             parse(body).extract[Message[Assessment]].body
-          def create(): Unit = {
-            val holder = createHolder(assessment.name)
-            holder ! AssessmentHolder.SetAssessment(assessment)
-          }
+          def create(): ActorRef =
+            context.actorOf(Holder.props(assessment.name), assessment.name)
           context
             .child(assessment.name)
-            .fold(create())(_ ! AssessmentHolder.SetAssessment(assessment))
-        case s if s contains "log" =>
-          val logmsg = parse(body).extract[Message[Log]]
-          logger.info(s"log msg: $logmsg")
+            .fold(create() ! Holder.Set(assessment))(_ ! Holder.Set(assessment))
         case other =>
           logger.warn(s"got unknown msg type: $other")
       }

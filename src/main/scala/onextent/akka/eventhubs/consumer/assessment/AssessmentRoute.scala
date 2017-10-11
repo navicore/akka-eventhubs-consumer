@@ -1,43 +1,31 @@
-package onextent.akka.eventhubs.consumer.routes
+package onextent.akka.eventhubs.consumer.assessment
 
-import scala.concurrent.duration._
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.ActorRef
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.pattern.ask
-import akka.util.Timeout
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
-import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
+import onextent.akka.eventhubs.consumer.ErrorSupport
+import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
 import onextent.akka.eventhubs.consumer.models.{Assessment, JsonSupport}
-import onextent.akka.eventhubs.consumer.{AssessmentService, ErrorSupport}
-import AssessmentService._
 import spray.json._
 
 import scala.concurrent.Future
 
-object CacherRoute
+object AssessmentRoute
     extends JsonSupport
     with LazyLogging
     with Directives
-    with ErrorSupport
-    with RequestTimeout {
+    with ErrorSupport {
 
-  implicit val system: ActorSystem = ActorSystem()
-  val config: Config = ConfigFactory.load()
-
-  implicit val timeout: Timeout = requestTimeout(config)
-
-  val assessmentCacher: ActorRef =
-    system.actorOf(AssessmentService.props(timeout), AssessmentService.name)
-
-  def apply: Route =
+  def apply(service: ActorRef): Route =
     path(urlpath / Segment) { name =>
       logRequest(urlpath) {
         handleErrors {
           cors(corsSettings) {
             get {
-              val f: Future[Any] = assessmentCacher ask GetAssessment(name)
+              val f: Future[Any] = service ask Get(name)
               onSuccess(f) { (r: Any) =>
                 {
                   r match {
@@ -54,12 +42,4 @@ object CacherRoute
         }
       }
     }
-}
-
-trait RequestTimeout {
-  def requestTimeout(config: Config): Timeout = {
-    val t = config.getString("akka.http.server.request-timeout")
-    val d = Duration(t)
-    FiniteDuration(d.length, d.unit)
-  }
 }
