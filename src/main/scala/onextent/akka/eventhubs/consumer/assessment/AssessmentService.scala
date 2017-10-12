@@ -33,8 +33,8 @@ class AssessmentService(implicit timeout: Timeout)
 
   EventHub()
     .source(SourceOptions().fromSavedOffsets().saveOffsets())
-    .alsoTo(AssessmentDbSink(context)) // todo, use filter to extract name before using generic DbSink
-    .alsoTo(HttpUpdateSink[Assessment](context, "assessment")) //todo filter w/ op to format for remote system and inject remote params
+    .alsoTo(AssessmentDbSink()) // todo, use filter to extract name before using generic DbSink
+    .alsoTo(HttpUpdateSink[Assessment]("assessment")) //todo filter w/ op to format for remote system and inject remote params
     .to(console)
     .run()
 

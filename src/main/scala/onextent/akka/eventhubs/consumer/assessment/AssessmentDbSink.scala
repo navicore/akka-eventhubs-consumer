@@ -14,7 +14,7 @@ import scala.concurrent.Future
 
 object AssessmentDbSink extends LazyLogging {
 
-  def apply(context: ActorContext): Sink[EventHubsMessage, Future[Done]] = {
+  def apply()(implicit context: ActorContext): Sink[EventHubsMessage, Future[Done]] = {
 
     implicit val formats: DefaultFormats.type = DefaultFormats
 

@@ -13,7 +13,9 @@ import scala.concurrent.Future
 
 object HttpUpdateSink extends LazyLogging {
 
-  def apply[T: Manifest](context: ActorContext, containsPattern: String) : Sink[EventHubsMessage, Future[Done]] = {
+  def apply[T: Manifest](containsPattern: String)(
+      implicit context: ActorContext
+  ): Sink[EventHubsMessage, Future[Done]] = {
 
     def createUpdater(): ActorRef =
       context.actorOf(Props[HttpUpdater], "HttpUpdater")
@@ -37,4 +39,3 @@ object HttpUpdateSink extends LazyLogging {
     }
   }
 }
-
