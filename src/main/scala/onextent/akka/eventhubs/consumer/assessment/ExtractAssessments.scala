@@ -10,7 +10,7 @@ object ExtractAssessments {
 
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  def apply(): Flow[String, Assessment, NotUsed] =
-    Flow[String].map(s => parse(s).extract[Message[Assessment]].body)
+  def apply(): Flow[String, (String, Assessment), NotUsed] =
+    Flow[String].map(s => parse(s).extract[Message[Assessment]].body).map(a => (a.name, a))
 }
 

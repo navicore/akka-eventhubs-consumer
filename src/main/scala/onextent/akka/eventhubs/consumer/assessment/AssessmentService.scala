@@ -26,7 +26,7 @@ class AssessmentService(implicit timeout: Timeout)
     .alsoTo(Console())
     .via(ExtractBodies("assessment"))
     .via(ExtractAssessments())
-    .to(AssessmentDbSink())
+    .to(DbSink[Assessment]())
     .run()
 
   override def receive: PartialFunction[Any, Unit] = {
