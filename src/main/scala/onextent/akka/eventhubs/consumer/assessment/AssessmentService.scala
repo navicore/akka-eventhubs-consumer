@@ -7,7 +7,6 @@ import com.microsoft.azure.reactiveeventhubs.SourceOptions
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
-import onextent.akka.eventhubs.consumer.streams._
 import onextent.akka.eventhubs.consumer.streams.db.{DbSink, Holder}
 import onextent.akka.eventhubs.consumer.streams.utils.{Console, ExtractBodies}
 
