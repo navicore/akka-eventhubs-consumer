@@ -1,4 +1,4 @@
-package onextent.akka.eventhubs.consumer.streams
+package onextent.akka.eventhubs.consumer.streams.utils
 
 import akka.NotUsed
 import akka.stream.scaladsl.Flow

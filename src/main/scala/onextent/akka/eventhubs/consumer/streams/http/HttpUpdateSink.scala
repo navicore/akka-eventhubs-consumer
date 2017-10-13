@@ -1,4 +1,4 @@
-package onextent.akka.eventhubs.consumer.streams
+package onextent.akka.eventhubs.consumer.streams.http
 
 import akka.Done
 import akka.actor._

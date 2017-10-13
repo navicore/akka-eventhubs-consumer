@@ -6,9 +6,10 @@ import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
 import com.microsoft.azure.reactiveeventhubs.SourceOptions
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.Holder
 import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
 import onextent.akka.eventhubs.consumer.streams._
+import onextent.akka.eventhubs.consumer.streams.db.{DbSink, Holder}
+import onextent.akka.eventhubs.consumer.streams.utils.{Console, ExtractBodies}
 
 object AssessmentService {
   def props(implicit timeout: Timeout) = Props(new AssessmentService)
@@ -26,7 +27,7 @@ class AssessmentService(implicit timeout: Timeout)
     .alsoTo(Console())
     .via(ExtractBodies("assessment"))
     .via(ExtractAssessments())
-    .to(DbSink[Assessment]())
+    .to(DbSink[Assessment])
     .run()
 
   override def receive: PartialFunction[Any, Unit] = {

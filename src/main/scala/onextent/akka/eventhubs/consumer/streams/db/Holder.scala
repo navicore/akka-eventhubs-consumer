@@ -1,8 +1,8 @@
-package onextent.akka.eventhubs.consumer
+package onextent.akka.eventhubs.consumer.streams.db
 
 import akka.actor._
 import com.typesafe.scalalogging.LazyLogging
-import onextent.akka.eventhubs.consumer.Holder._
+import onextent.akka.eventhubs.consumer.streams.db.Holder._
 
 object Holder {
   def props(name: String) = Props(new Holder(name))

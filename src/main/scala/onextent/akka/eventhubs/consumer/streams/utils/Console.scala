@@ -1,4 +1,4 @@
-package onextent.akka.eventhubs.consumer.streams
+package onextent.akka.eventhubs.consumer.streams.utils
 
 import akka.Done
 import akka.stream.scaladsl.Sink
