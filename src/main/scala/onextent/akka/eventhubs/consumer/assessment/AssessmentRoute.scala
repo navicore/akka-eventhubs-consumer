@@ -8,13 +8,12 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import com.typesafe.scalalogging.LazyLogging
 import onextent.akka.eventhubs.consumer.ErrorSupport
 import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
-import onextent.akka.eventhubs.consumer.models.{Assessment, JsonSupport}
 import spray.json._
 
 import scala.concurrent.Future
 
 object AssessmentRoute
-    extends JsonSupport
+    extends AssessmentJsonSupport
     with LazyLogging
     with Directives
     with ErrorSupport {

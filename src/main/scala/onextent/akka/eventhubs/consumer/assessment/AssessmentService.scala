@@ -1,18 +1,14 @@
 package onextent.akka.eventhubs.consumer.assessment
 
-import akka.Done
 import akka.actor._
-import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import com.microsoft.azure.reactiveeventhubs.ResumeOnError._
+import com.microsoft.azure.reactiveeventhubs.SourceOptions
 import com.microsoft.azure.reactiveeventhubs.scaladsl.EventHub
-import com.microsoft.azure.reactiveeventhubs.{EventHubsMessage, SourceOptions}
 import com.typesafe.scalalogging.LazyLogging
+import onextent.akka.eventhubs.consumer.Holder
 import onextent.akka.eventhubs.consumer.assessment.AssessmentService.Get
-import onextent.akka.eventhubs.consumer.models.Assessment
-import onextent.akka.eventhubs.consumer.{Holder, HttpUpdateSink}
-
-import scala.concurrent.Future
+import onextent.akka.eventhubs.consumer.streams._
 
 object AssessmentService {
   def props(implicit timeout: Timeout) = Props(new AssessmentService)
@@ -25,17 +21,12 @@ class AssessmentService(implicit timeout: Timeout)
     extends Actor
     with LazyLogging {
 
-  val console: Sink[EventHubsMessage, Future[Done]] =
-    Sink.foreach[EventHubsMessage] { m =>
-      logger.debug(
-        s"enqueued-time: ${m.received}, offset: ${m.offset}, payload: ${m.contentAsString}")
-    }
-
   EventHub()
     .source(SourceOptions().fromSavedOffsets().saveOffsets())
-    .alsoTo(AssessmentDbSink()) // todo, use filter to extract name before using generic DbSink
-    .alsoTo(HttpUpdateSink[Assessment]("assessment")) //todo filter w/ op to format for remote system and inject remote params
-    .to(console)
+    .alsoTo(Console())
+    .via(ExtractBodies("assessment"))
+    .via(ExtractAssessments())
+    .to(AssessmentDbSink())
     .run()
 
   override def receive: PartialFunction[Any, Unit] = {
